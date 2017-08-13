@@ -8,4 +8,5 @@
     <string name="edit_node">Edit</string>
     <string name="delete_node">Delete</string>
     <string name="title_input_hint">Enter the title of the node.</string>
+    <string name="save_option">Save</string>
 </resources>
