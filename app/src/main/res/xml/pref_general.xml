@@ -1,0 +1,20 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="@string/backup_switch_key"
+        android:summary="Automatically backup used media files in case they get deleted by other software."
+        android:title="Enable auto-backup" />
+
+    <!-- NOTE: EditTextPreference accepts EditText attributes. -->
+    <!-- NOTE: EditTextPreference's summary should be set to its value by the activity code. -->
+    <moe.gensokyoradio.liberty.mymind.PathPreference
+        android:capitalize="words"
+        android:inputType="text"
+        android:key="@string/backup_dir_path_key"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="Backup directory path" />
+
+</PreferenceScreen>
