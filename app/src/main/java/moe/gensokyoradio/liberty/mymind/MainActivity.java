@@ -17,9 +17,7 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Set;
 
@@ -101,17 +99,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private void initializeMap(String title, String path) {
         try {
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(openFileOutput(path, MODE_PRIVATE)));
-            writer.write(""
-                    + "{\"title\":\"" + title + "\"," + "\"attributes\":{},\"children\":["
-                    + "{\"title\":\"" + "test1" + "\"," + "\"attributes\":{},\"children\":[]},"
-                    + "{\"title\":\"" + "test2" + "\"," + "\"attributes\":{},\"children\":[]},"
-                    + "{\"title\":\"" + "LinuxBanzai" + "\"," + "\"attributes\":{},\"children\":[]}"
-                    + "]}"
-            );
-            writer.close();
+            Util.writeAll(this, path, "{\"title\":\"" + title + "\"," + "\"attributes\":{},\"children\":[]}");
         } catch (IOException e) {
             e.printStackTrace();
+            this.finish();
         }
     }
 
@@ -129,8 +120,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            //startActivity(new Intent(this, SettingsActivity.class));
             return true;
         }
         if (id == R.id.action_about) {

@@ -2,7 +2,6 @@ package moe.gensokyoradio.liberty.mymind;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -15,13 +14,8 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 
-import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 
 import moe.gensokyoradio.liberty.mymind.tree.ClickableNode;
 import moe.gensokyoradio.liberty.mymind.tree.MyMindTree;
@@ -41,7 +35,13 @@ public class MindTreeActivity extends AppCompatActivity {
 
         mapPath = this.getIntent().getStringExtra(MIND_PATH_KEY);
 
-        tree = MyMindTree.fromJSON(readAll(mapPath));
+        try {
+            tree = MyMindTree.fromJSON(Util.readAll(this, mapPath));
+        } catch (IOException e) {
+            e.printStackTrace();
+            this.finish();
+            return;
+        }
 
         treeLayout = (PartitionLayout) findViewById(R.id.treeLayout);
         Log.i("TITLE", tree.getRootNode().getTitle());
@@ -53,38 +53,6 @@ public class MindTreeActivity extends AppCompatActivity {
                         Log.i("OnClick", node.getPath().getAbsolutePath());
                     }
                 }, this);
-    }
-
-    private String readAll(String path) {
-        StringBuilder stringBuilder = new StringBuilder();
-        try {
-            InputStreamReader reader = new InputStreamReader(openFileInput(mapPath));
-            int c = 0;
-            while ((c = reader.read()) != -1) {
-                stringBuilder.append((char) c);
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            this.finish();
-        } catch (IOException e) {
-            e.printStackTrace();
-            this.finish();
-        }
-        return stringBuilder.toString();
-    }
-
-    private void writeAll(String path, String string) {
-        try {
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(openFileOutput(mapPath, MODE_PRIVATE)));
-            writer.write(string);
-            writer.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            this.finish();
-        } catch (IOException e) {
-            e.printStackTrace();
-            this.finish();
-        }
     }
 
     @Override
@@ -123,6 +91,9 @@ public class MindTreeActivity extends AppCompatActivity {
                     .show();
                 return true;
             case R.id.editNode:
+                Intent intent = new Intent(this, ContentActivity.class);
+                intent.putExtra(ContentActivity.CONTENT_PATH_KEY, Util.getMD5Checksum(currentButton.getNode().getPath().getAbsolutePath()));
+                startActivity(intent);
                 return true;
             case R.id.deleteNode:
                 return true;
@@ -145,9 +116,13 @@ public class MindTreeActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.saveOption) {
-            writeAll(mapPath, this.tree.toJSON());
+            try {
+                Util.writeAll(this, mapPath, this.tree.toJSON());
+            } catch (IOException e) {
+                e.printStackTrace();
+                this.finish();
+            }
             return true;
         }
 

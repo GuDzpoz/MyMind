@@ -31,9 +31,11 @@ import java.util.Map;
 
 public class MyMindTree {
     private MyNode root;
+
     private MyMindTree() {
         // nothing
     }
+
     public MyMindTree(String title) {
         this.root = new MyNode(title);
     }
@@ -65,12 +67,14 @@ class MyNodeDeserializer implements JsonDeserializer<MyNode> {
         String title = nodeObject.get("title").getAsString();
         MyNode node = new MyNode(title);
 
-        Type childrenListType = new TypeToken<List<MyNode>>(){}.getType();
-        Type attributesMapType = new TypeToken<Map<String, String>>(){}.getType();
+        Type childrenListType = new TypeToken<List<MyNode>>() {
+        }.getType();
+        Type attributesMapType = new TypeToken<Map<String, String>>() {
+        }.getType();
         node.children = context.deserialize(nodeObject.get("children"), childrenListType);
         node.attributes = context.deserialize(nodeObject.get("attributes"), attributesMapType);
 
-        for(MyNode child : node.children) {
+        for (MyNode child : node.children) {
             child.parent = node;
         }
 
