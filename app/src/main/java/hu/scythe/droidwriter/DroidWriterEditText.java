@@ -23,9 +23,9 @@ public class DroidWriterEditText extends android.support.v7.widget.AppCompatEdit
     public static final String TAG = "DroidWriter";
 
     // Style constants
-    private static final int STYLE_BOLD = 0;
-    private static final int STYLE_ITALIC = 1;
-    private static final int STYLE_UNDERLINED = 2;
+    public static final int STYLE_BOLD = 0;
+    public static final int STYLE_ITALIC = 1;
+    public static final int STYLE_UNDERLINED = 2;
 
     // Optional styling button references
     private ToggleButton boldToggle;
