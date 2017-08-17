@@ -1,23 +1,34 @@
 package moe.gensokyoradio.liberty.mymind;
 
-import android.graphics.Color;
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 
 import java.io.IOException;
 
-import jp.wasabeef.richeditor.RichEditor;
+import hu.scythe.droidwriter.DroidWriterEditText;
 
 public class ContentActivity extends AppCompatActivity {
+    // TODO: Change the methods to practical ones
     public static final String CONTENT_PATH_KEY = "path";
-    private RichEditor mEditor;
-    private TextView mPreview;
+    private static final int SELECT_PICTURE = 1;
+    private DroidWriterEditText editText;
     private String path;
 
+    @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -25,45 +36,22 @@ public class ContentActivity extends AppCompatActivity {
 
         path = getIntent().getStringExtra(CONTENT_PATH_KEY);
 
-        mEditor = (RichEditor) findViewById(R.id.editor);
-        mEditor.setEditorHeight(200);
-        mEditor.setEditorFontSize(22);
-        mEditor.setPadding(10, 10, 10, 10);
-        mEditor.setPlaceholder("Insert text here...");
         try {
             String content = Util.readAll(this, path);
-            mEditor.setHtml(content);
+            parse(content);
         } catch (IOException e) {
             e.printStackTrace();
             this.finish();
         }
 
-        mPreview = (TextView) findViewById(R.id.preview);
-        mEditor.setOnTextChangeListener(new RichEditor.OnTextChangeListener() {
-            @Override
-            public void onTextChange(String text) {
-                mPreview.setText(text);
-            }
-        });
-
-        findViewById(R.id.action_undo).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mEditor.undo();
-            }
-        });
-
-        findViewById(R.id.action_redo).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mEditor.redo();
-            }
-        });
+        final Context context = this;
 
         findViewById(R.id.action_bold).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mEditor.setBold();
+                if(editText != null) {
+                    editText.tog
+                }
             }
         });
 
@@ -74,27 +62,6 @@ public class ContentActivity extends AppCompatActivity {
             }
         });
 
-        findViewById(R.id.action_subscript).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mEditor.setSubscript();
-            }
-        });
-
-        findViewById(R.id.action_superscript).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mEditor.setSuperscript();
-            }
-        });
-
-        findViewById(R.id.action_strikethrough).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mEditor.setStrikeThrough();
-            }
-        });
-
         findViewById(R.id.action_underline).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -102,142 +69,42 @@ public class ContentActivity extends AppCompatActivity {
             }
         });
 
-        findViewById(R.id.action_heading1).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.action_heading).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mEditor.setHeading(1);
             }
         });
 
-        findViewById(R.id.action_heading2).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mEditor.setHeading(2);
-            }
-        });
-
-        findViewById(R.id.action_heading3).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mEditor.setHeading(3);
-            }
-        });
-
-        findViewById(R.id.action_heading4).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mEditor.setHeading(4);
-            }
-        });
-
-        findViewById(R.id.action_heading5).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mEditor.setHeading(5);
-            }
-        });
-
-        findViewById(R.id.action_heading6).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mEditor.setHeading(6);
-            }
-        });
-
-        findViewById(R.id.action_txt_color).setOnClickListener(new View.OnClickListener() {
-            private boolean isChanged;
-
-            @Override
-            public void onClick(View v) {
-                mEditor.setTextColor(isChanged ? Color.BLACK : Color.RED);
-                isChanged = !isChanged;
-            }
-        });
-
-        findViewById(R.id.action_bg_color).setOnClickListener(new View.OnClickListener() {
-            private boolean isChanged;
-
-            @Override
-            public void onClick(View v) {
-                mEditor.setTextBackgroundColor(isChanged ? Color.TRANSPARENT : Color.YELLOW);
-                isChanged = !isChanged;
-            }
-        });
-
-        findViewById(R.id.action_indent).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mEditor.setIndent();
-            }
-        });
-
-        findViewById(R.id.action_outdent).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mEditor.setOutdent();
-            }
-        });
-
-        findViewById(R.id.action_align_left).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mEditor.setAlignLeft();
-            }
-        });
-
-        findViewById(R.id.action_align_center).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mEditor.setAlignCenter();
-            }
-        });
-
-        findViewById(R.id.action_align_right).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mEditor.setAlignRight();
-            }
-        });
-
-        findViewById(R.id.action_blockquote).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mEditor.setBlockquote();
-            }
-        });
-
-        findViewById(R.id.action_insert_bullets).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mEditor.setBullets();
-            }
-        });
-
-        findViewById(R.id.action_insert_numbers).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mEditor.setNumbers();
-            }
-        });
-
         findViewById(R.id.action_insert_image).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mEditor.insertImage("http://www.1honeywan.com/dachshund/image/7.21/7.21_3_thumb.JPG",
-                        "dachshund");
+                getImage();
             }
         });
 
         findViewById(R.id.action_insert_link).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mEditor.insertLink("https://github.com/wasabeef", "wasabeef");
-            }
-        });
-        findViewById(R.id.action_insert_checkbox).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mEditor.insertTodo();
+                final EditText url = new EditText(context);
+                url.setHint(R.string.link_identifier);
+                final EditText text = new EditText(context);
+
+                LinearLayout layout = new LinearLayout(context);
+                layout.setOrientation(LinearLayout.VERTICAL);
+                layout.addView(url);
+                layout.addView(text);
+                new AlertDialog.Builder(context)
+                        .setView(layout)
+                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                String urlString = url.getText().toString();
+                                String textString = text.getText().toString();
+                                mEditor.insertLink(urlString, textString);
+                            }
+                        })
+                        .show();
             }
         });
     }
@@ -262,5 +129,41 @@ public class ContentActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void getImage() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), SELECT_PICTURE);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == SELECT_PICTURE) {
+                Uri selectedImageUri = data.getData();
+                String path = backup(getRealPathFromURI(selectedImageUri));
+            }
+        }
+    }
+
+    public String getRealPathFromURI(Uri contentUri) {
+        Cursor cursor = null;
+        try {
+            String[] projection = {MediaStore.Images.Media.DATA};
+            cursor = this.getContentResolver().query(contentUri, projection, null, null, null);
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            cursor.moveToFirst();
+            return cursor.getString(column_index);
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
+
+    private String backup(String path) {
+        return path;
     }
 }

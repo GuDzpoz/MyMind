@@ -54,6 +54,7 @@ public class PartitionLayout extends LinearLayout {
     @Nullable
     private OnNodeClickListener listener;
     private Activity activity;
+
     public void setNode(MyNode n, OnNodeClickListener l, Activity activity) {
         listener = l;
         this.activity = activity;
@@ -74,7 +75,7 @@ public class PartitionLayout extends LinearLayout {
         root.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(listener != null) {
+                if (listener != null) {
                     listener.onClick(v, layout, root, node);
                 }
             }
@@ -99,7 +100,7 @@ public class PartitionLayout extends LinearLayout {
             current = getChild(current, part);
         }
         if (current != null) {
-            if(getChild(current, node.getTitle()) == null) {
+            if (getChild(current, node.getTitle()) == null) {
                 node.setParent(current.node);
                 current.node.getChildren().add(node);
                 current.setNode(current.node, current.listener, current.activity);
@@ -107,10 +108,29 @@ public class PartitionLayout extends LinearLayout {
         }
     }
 
+    public void removeNode(MyPath path) {
+        PartitionLayout current = this;
+        PartitionLayout parent = null;
+        List<String> paths = path.getPath();
+        paths.remove(0); // "this"
+        for (String part : paths) {
+            parent = current;
+            current = getChild(current, part);
+        }
+        if (current != null) {
+            if (current.node.getChildren().isEmpty()) {
+                if (parent != null) {
+                    parent.node.getChildren().remove(current.node);
+                    parent.setNode(parent.node, parent.listener, parent.activity);
+                }
+            }
+        }
+    }
+
     private PartitionLayout getChild(PartitionLayout currentLayout, String title) {
-        for(int i = 0; i != currentLayout.childrenLayout.getChildCount(); ++i) {
-            PartitionLayout layout = (PartitionLayout)currentLayout.childrenLayout.getChildAt(i);
-            if(layout.node.getTitle().equals(title)) {
+        for (int i = 0; i != currentLayout.childrenLayout.getChildCount(); ++i) {
+            PartitionLayout layout = (PartitionLayout) currentLayout.childrenLayout.getChildAt(i);
+            if (layout.node.getTitle().equals(title)) {
                 return layout;
             }
         }
@@ -121,7 +141,7 @@ public class PartitionLayout extends LinearLayout {
         root.setText(node.getTitle());
 
         childrenLayout.removeAllViews();
-        for(MyNode child : node.getChildren()) {
+        for (MyNode child : node.getChildren()) {
             PartitionLayout childLayout = new PartitionLayout(getContext());
             childLayout.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
             childLayout.setNode(child, listener, activity);

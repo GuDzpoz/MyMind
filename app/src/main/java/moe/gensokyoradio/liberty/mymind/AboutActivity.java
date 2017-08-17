@@ -1,11 +1,23 @@
 package moe.gensokyoradio.liberty.mymind;
 
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
+import android.text.TextWatcher;
+import android.text.style.StyleSpan;
+import android.util.Log;
+import android.view.KeyEvent;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+
+import hu.scythe.droidwriter.DroidWriterEditText;
 
 public class AboutActivity extends AppCompatActivity {
 
@@ -15,9 +27,6 @@ public class AboutActivity extends AppCompatActivity {
         setContentView(R.layout.activity_about);
 
         setTitle(getString(R.string.about_title));
-
-        TextView about = (TextView) this.findViewById(R.id.aboutTextview);
-        about.setText(getLicense());
     }
 
     private String getLicense() {

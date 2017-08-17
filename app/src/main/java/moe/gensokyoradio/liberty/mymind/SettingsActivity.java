@@ -12,10 +12,8 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBar;
-import android.util.AttributeSet;
 import android.view.MenuItem;
 
-import java.io.File;
 import java.util.List;
 
 /*
