@@ -72,7 +72,7 @@ public class DroidWriterEditText extends android.support.v7.widget.AppCompatEdit
      * @param style
      *            The styles that should be toggled on the selected text.
      */
-    private void toggleStyle(int style) {
+    public void toggleStyle(int style) {
         // Gets the current cursor position, or the starting position of the
         // selection
         int selectionStart = this.getSelectionStart();
