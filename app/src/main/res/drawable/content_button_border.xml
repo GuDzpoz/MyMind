@@ -6,6 +6,12 @@
             <stroke android:width="3dip" android:color="#d5a54f"/>
         </shape>
     </item>
+    <item android:state_enabled="false">
+        <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle" >
+            <solid android:color="@android:color/white" />
+            <stroke android:width="3dip" android:color="#d5a54f"/>
+        </shape>
+    </item>
     <item>
         <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle" >
             <solid android:color="@android:color/black" />

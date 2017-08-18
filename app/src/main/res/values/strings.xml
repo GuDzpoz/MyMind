@@ -21,4 +21,9 @@
     <string name="button_add_map">Add new map</string>
     <string name="action_close_map">Close the map</string>
     <string name="link_identifier">https://</string>
+    <string name="link_edit_text_hint">Input a link here...</string>
+    <string name="heading_edit_text_hint">Input a heading here...</string>
+    <string name="item_move_up">Move Up</string>
+    <string name="item_move_down">Move Down</string>
+    <string name="item_delete">Delete</string>
 </resources>

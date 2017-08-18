@@ -1,78 +1,64 @@
 package moe.gensokyoradio.liberty.mymind;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.LinearLayout;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 
 import hu.scythe.droidwriter.DroidWriterEditText;
+import moe.gensokyoradio.liberty.mymind.content.ContentLayout;
 
-public class ContentActivity extends AppCompatActivity {
+public class ContentActivity extends AppCompatActivity implements View.OnClickListener {
+    private static final String TAG = "ContentActivity";
     // TODO: Change the methods to practical ones
     public static final String CONTENT_PATH_KEY = "path";
     private static final int SELECT_PICTURE = 1;
     private DroidWriterEditText editText;
+    private ContentLayout contentLayout;
     private String path;
 
-    @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_content);
 
         path = getIntent().getStringExtra(CONTENT_PATH_KEY);
+        contentLayout = (ContentLayout) findViewById(R.id.contentLayout);
+        contentLayout.setOnContentClickedListener(this);
+        contentLayout.setOnContextCreatedListener(this);
 
         try {
             String content = Util.readAll(this, path);
-            parse(content);
+            contentLayout.load(content);
         } catch (IOException e) {
             e.printStackTrace();
             this.finish();
         }
 
-        final Context context = this;
-
-        findViewById(R.id.action_bold).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.action_text).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(editText != null) {
-                    editText.tog
-                }
-            }
-        });
-
-        findViewById(R.id.action_italic).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mEditor.setItalic();
-            }
-        });
-
-        findViewById(R.id.action_underline).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mEditor.setUnderline();
+                contentLayout.addText();
             }
         });
 
         findViewById(R.id.action_heading).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mEditor.setHeading(1);
+                contentLayout.addHeading();
             }
         });
 
@@ -86,25 +72,37 @@ public class ContentActivity extends AppCompatActivity {
         findViewById(R.id.action_insert_link).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final EditText url = new EditText(context);
-                url.setHint(R.string.link_identifier);
-                final EditText text = new EditText(context);
+                contentLayout.addLink();
+            }
+        });
 
-                LinearLayout layout = new LinearLayout(context);
-                layout.setOrientation(LinearLayout.VERTICAL);
-                layout.addView(url);
-                layout.addView(text);
-                new AlertDialog.Builder(context)
-                        .setView(layout)
-                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                String urlString = url.getText().toString();
-                                String textString = text.getText().toString();
-                                mEditor.insertLink(urlString, textString);
-                            }
-                        })
-                        .show();
+        findViewById(R.id.action_bold).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(editText != null) {
+                    editText.toggleStyle(DroidWriterEditText.STYLE_BOLD);
+                    editText.requestFocus();
+                }
+            }
+        });
+
+        findViewById(R.id.action_italic).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(editText != null) {
+                    editText.toggleStyle(DroidWriterEditText.STYLE_ITALIC);
+                    editText.requestFocus();
+                }
+            }
+        });
+
+        findViewById(R.id.action_underline).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(editText != null) {
+                    editText.toggleStyle(DroidWriterEditText.STYLE_UNDERLINED);
+                    editText.requestFocus();
+                }
             }
         });
     }
@@ -121,7 +119,7 @@ public class ContentActivity extends AppCompatActivity {
 
         if (id == R.id.saveOption) {
             try {
-                Util.writeAll(this, path, mEditor.getHtml());
+                Util.writeAll(this, path, contentLayout.save());
             } catch (IOException e) {
                 e.printStackTrace();
                 this.finish();
@@ -143,7 +141,22 @@ public class ContentActivity extends AppCompatActivity {
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == SELECT_PICTURE) {
                 Uri selectedImageUri = data.getData();
-                String path = backup(getRealPathFromURI(selectedImageUri));
+                Log.i(TAG, "Uri: " + (selectedImageUri != null ? selectedImageUri.toString() : "null"));
+                if(selectedImageUri.getScheme().equals("content")) {
+                    String path = backup(getRealPathFromURI(selectedImageUri));
+                    Log.i(TAG, "Image Path: " + path);
+                    contentLayout.addImage(path);
+                }
+                else {
+                    String path = null;
+                    try {
+                        path = backup(URLDecoder.decode(selectedImageUri.getPath(), "UTF-8"));
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+                    Log.i(TAG, "Image Path: " + path);
+                }
+                contentLayout.addImage(path);
             }
         }
     }
@@ -153,9 +166,14 @@ public class ContentActivity extends AppCompatActivity {
         try {
             String[] projection = {MediaStore.Images.Media.DATA};
             cursor = this.getContentResolver().query(contentUri, projection, null, null, null);
-            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-            cursor.moveToFirst();
-            return cursor.getString(column_index);
+            if (cursor == null) {
+                return null;
+            }
+            else {
+                int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                cursor.moveToFirst();
+                return cursor.getString(column_index);
+            }
         } finally {
             if (cursor != null) {
                 cursor.close();
@@ -163,7 +181,54 @@ public class ContentActivity extends AppCompatActivity {
         }
     }
 
+    private View contextMenuView;
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        getMenuInflater().inflate(R.menu.menu_content_item_operations, menu);
+        if(contentLayout.getIndex(v) == 0) {
+            menu.findItem(R.id.up).setEnabled(false);
+        }
+        if(contentLayout.getIndex(v) == contentLayout.getChildCount() - 1) {
+            menu.findItem(R.id.down).setEnabled(false);
+        }
+        contextMenuView = v;
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        super.onContextItemSelected(item);
+        int id = item.getItemId();
+        switch (id) {
+            case R.id.up:
+                contentLayout.move(contextMenuView, contentLayout.getIndex(contextMenuView) - 1);
+                break;
+            case R.id.down:
+                contentLayout.move(contextMenuView, contentLayout.getIndex(contextMenuView) + 1);
+                break;
+            case R.id.delete:
+                contentLayout.removeView(contextMenuView);
+                break;
+        }
+        return true;
+    }
+
     private String backup(String path) {
         return path;
+    }
+
+    @Override
+    public void onClick(View view) {
+        if(view instanceof DroidWriterEditText) {
+            this.editText = (DroidWriterEditText)view;
+            findViewById(R.id.action_bold).setEnabled(true);
+            findViewById(R.id.action_italic).setEnabled(true);
+            findViewById(R.id.action_underline).setEnabled(true);
+        }
+        else {
+            findViewById(R.id.action_bold).setEnabled(false);
+            findViewById(R.id.action_italic).setEnabled(false);
+            findViewById(R.id.action_underline).setEnabled(false);
+        }
     }
 }

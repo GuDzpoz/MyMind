@@ -14,7 +14,7 @@
             android:orientation="horizontal">
 
             <ImageButton
-                android:id="@+id/action_bold"
+                android:id="@+id/action_text"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_margin="8dp"
@@ -22,29 +22,7 @@
                 android:contentDescription="@null"
                 android:padding="8dp"
                 android:scaleType="fitXY"
-                android:src="@drawable/bold" />
-
-            <ImageButton
-                android:id="@+id/action_italic"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_margin="8dp"
-                android:background="@drawable/content_button_border"
-                android:contentDescription="@null"
-                android:padding="8dp"
-                android:scaleType="fitXY"
-                android:src="@drawable/italic" />
-
-            <ImageButton
-                android:id="@+id/action_underline"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_margin="8dp"
-                android:background="@drawable/content_button_border"
-                android:contentDescription="@null"
-                android:padding="8dp"
-                android:scaleType="fitXY"
-                android:src="@drawable/underline" />
+                android:src="@drawable/html_edit" />
 
             <ImageButton
                 android:id="@+id/action_heading"
@@ -79,6 +57,42 @@
                 android:scaleType="fitXY"
                 android:src="@drawable/insert_link" />
 
+            <ImageButton
+                android:id="@+id/action_bold"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/content_button_border"
+                android:contentDescription="@null"
+                android:enabled="false"
+                android:padding="8dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/bold" />
+
+            <ImageButton
+                android:id="@+id/action_italic"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/content_button_border"
+                android:contentDescription="@null"
+                android:enabled="false"
+                android:padding="8dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/italic" />
+
+            <ImageButton
+                android:id="@+id/action_underline"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/content_button_border"
+                android:contentDescription="@null"
+                android:enabled="false"
+                android:padding="8dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/underline" />
+
         </LinearLayout>
     </HorizontalScrollView>
 
@@ -86,15 +100,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <LinearLayout
+        <moe.gensokyoradio.liberty.mymind.content.ContentLayout
+            android:id="@+id/contentLayout"
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <hu.scythe.droidwriter.DroidWriterEditText
-                android:id="@+id/initialEditText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
+            android:layout_height="wrap_content" />
     </ScrollView>
 </LinearLayout>
