@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.WindowManager;
 
 /*
@@ -25,6 +26,7 @@ import android.view.WindowManager;
  */
 
 public class LocalImageView extends android.support.v7.widget.AppCompatImageView {
+    private static final String TAG = "LocalImageView";
     private String path;
 
     public LocalImageView(Context context) {
@@ -47,14 +49,17 @@ public class LocalImageView extends android.support.v7.widget.AppCompatImageView
         this.path = path;
 
         DisplayMetrics metric = new DisplayMetrics();
-        ((WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(metric);
+        ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(metric);
         int width = metric.widthPixels;  // 屏幕宽度（像素）
         int height = metric.heightPixels;  // 屏幕高度（像素）
+        Log.i(TAG, "Bitmap requested max size: " + "width: " + width + ", height: " + height);
+        Log.i(TAG, "Loading image: " + path);
         Bitmap bitmap = decodeSampledBitmapFromFile(path, width, height);
-        if(bitmap != null) {
+        if (bitmap != null) {
+            Log.i(TAG, "Bitmap size: " + bitmap.getWidth() + "x" + bitmap.getHeight());
             this.setAdjustViewBounds(true);
-            this.setImageBitmap(bitmap);
             this.setMaxWidth(width);
+            this.setImageBitmap(bitmap);
         }
     }
 
@@ -67,6 +72,7 @@ public class LocalImageView extends android.support.v7.widget.AppCompatImageView
 
         // Calculate inSampleSize
         options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+        Log.i(TAG, "Calculated sample size of image: " + "inSampleSize: " + options.inSampleSize);
 
         // Decode bitmap with inSampleSize set
         options.inJustDecodeBounds = false;
@@ -77,21 +83,14 @@ public class LocalImageView extends android.support.v7.widget.AppCompatImageView
         // Raw height and width of image
         final int height = options.outHeight;
         final int width = options.outWidth;
+        Log.i(TAG, "Raw size of image: " + "width: " + width + ", height: " + height);
         int inSampleSize = 1;
 
-        if (height > reqHeight || width > reqWidth) {
-
-            final int halfHeight = height / 2;
-            final int halfWidth = width / 2;
-
-            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
-            // height and width larger than the requested height and width.
-            while ((halfHeight / inSampleSize) >= reqHeight
-                    && (halfWidth / inSampleSize) >= reqWidth) {
-                inSampleSize *= 2;
-            }
+        while ((width / inSampleSize) >= reqWidth || (height / inSampleSize) >= reqHeight) {
+            inSampleSize *= 2;
         }
 
+        Log.i(TAG, "Calculated size of image: " + "width: " + width / inSampleSize + ", height: " + height / inSampleSize);
         return inSampleSize;
     }
 }

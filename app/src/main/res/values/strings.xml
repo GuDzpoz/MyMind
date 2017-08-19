@@ -26,4 +26,5 @@
     <string name="item_move_up">Move Up</string>
     <string name="item_move_down">Move Down</string>
     <string name="item_delete">Delete</string>
+    <string name="load_license_toast">Loading licenses...</string>
 </resources>

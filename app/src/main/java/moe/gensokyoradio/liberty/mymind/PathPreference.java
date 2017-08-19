@@ -43,10 +43,12 @@ public class PathPreference extends DialogPreference implements AdapterView.OnIt
 
     public PathPreference(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        setDefaultValue(TheApplication.DEFAULT_STORAGE_PATH);
     }
 
     public PathPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
+        setDefaultValue(TheApplication.DEFAULT_STORAGE_PATH);
     }
 
     private ListView listView;
@@ -65,12 +67,13 @@ public class PathPreference extends DialogPreference implements AdapterView.OnIt
         super.onDialogClosed(positiveResult);
 
         if(positiveResult) {
+            // TODO: Consider moving the existing files in the old location to the new one
             this.getEditor().putString(this.getKey(), dir.getAbsolutePath()).apply();
         }
     }
 
     private void update(File newDirectory) {
-        this.setTitle(newDirectory.getAbsolutePath());
+        this.setSummary(newDirectory.getAbsolutePath());
 
         listView.setAdapter(new DirListAdapter(this.getContext(), newDirectory));
         listView.postInvalidate();

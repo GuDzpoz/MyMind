@@ -19,9 +19,15 @@ package moe.gensokyoradio.liberty.mymind;
 import android.content.Context;
 
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -31,17 +37,84 @@ public class Util {
         // Instance not allowed
     }
 
-    public static String readAll(Context context, String path) throws IOException {
-        StringBuilder stringBuilder = new StringBuilder();
+    public static void directorySaveCopy(File src, File dst) throws IOException {
+        dst.getParentFile().mkdirs();
+        copy(src, dst);
+    }
+
+    public static void copy(File src, File dst) throws IOException {
+        InputStream in = new FileInputStream(src);
         try {
-            InputStreamReader reader = new InputStreamReader(context.openFileInput(path));
-            int c = 0;
+            OutputStream out = new FileOutputStream(dst);
+            try {
+                // Transfer bytes from in to out
+                byte[] buf = new byte[1024];
+                int len;
+                while ((len = in.read(buf)) > 0) {
+                    out.write(buf, 0, len);
+                }
+            } finally {
+                out.close();
+            }
+        } finally {
+            in.close();
+        }
+    }
+
+    public static String readLocalAll(Context context, String fileName) throws IOException {
+        try {
+            return read(context.openFileInput(fileName));
+        } catch (FileNotFoundException e) {
+            return "";
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    public static void writeLocalAll(Context context, String fileName, String string) throws IOException {
+        write(context.openFileOutput(fileName, Context.MODE_PRIVATE), string);
+    }
+
+    public static String readAll(String path) throws IOException {
+        try {
+            return read(new FileInputStream(path));
+        } catch (FileNotFoundException e) {
+            return "";
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    public static void writeAll(String path, String string) throws IOException {
+        File file = new File(path);
+        if (file.exists()) {
+            try {
+                write(new FileOutputStream(path), string);
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw e;
+            }
+        } else {
+            file.getParentFile().mkdirs();
+            try {
+                write(new FileOutputStream(path), string);
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw e;
+            }
+        }
+    }
+
+    public static String read(InputStream inputStream) throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        InputStreamReader reader = new InputStreamReader(inputStream);
+        int c = 0;
+        try {
             while ((c = reader.read()) != -1) {
                 stringBuilder.append((char) c);
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            return "";
         } catch (IOException e) {
             e.printStackTrace();
             throw e;
@@ -49,15 +122,14 @@ public class Util {
         return stringBuilder.toString();
     }
 
-    public static void writeAll(Context context, String path, String string) throws IOException {
+    public static void write(OutputStream outputStream, String string) throws FileNotFoundException, IOException {
         try {
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(context.openFileOutput(path, Context.MODE_PRIVATE)));
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
             writer.write(string);
             writer.close();
         } catch (FileNotFoundException e) {
-            // TODO: Think about the case when a directory doesn't exist.
             e.printStackTrace();
-            throw new RuntimeException("Shouldn't the openFileOutput() create one when file not found?", e);
+            throw e;
         } catch (IOException e) {
             e.printStackTrace();
             throw e;

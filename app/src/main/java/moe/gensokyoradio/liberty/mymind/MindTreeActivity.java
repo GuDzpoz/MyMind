@@ -23,11 +23,17 @@ import moe.gensokyoradio.liberty.mymind.tree.MyNode;
 
 public class MindTreeActivity extends AppCompatActivity {
     // TODO: Set this activity as the launch activity, and consider what preferences should be set to allow user to choose the start map ( last opened or specific )
-    public static final String MAP_PATH_KEY = "path";
+    public static final String MAP_FILENAME_ID = "fileName";
 
     private List<android.support.v4.app.Fragment> fragments = new ArrayList<>();
     private ViewPager viewPager;
     private FragmentPagerAdapter adapter;
+    // TODO: If we are to add support for multi-fragment, remove the fileName field
+    private String fileName;
+
+    public static String getMapPath(String mapFileName) {
+        return TheApplication.getPath(mapFileName, mapFileName);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,9 +58,9 @@ public class MindTreeActivity extends AppCompatActivity {
         };
         viewPager.setAdapter(adapter);
 
-        String path = getIntent().getStringExtra(MAP_PATH_KEY);
-        if (path != null) {
-            addFragment(path);
+        this.fileName = getIntent().getStringExtra(MAP_FILENAME_ID);
+        if (fileName != null) {
+            addFragment(getMapPath(fileName));
         }
     }
 
@@ -64,9 +70,11 @@ public class MindTreeActivity extends AppCompatActivity {
         fragments.add(fragment);
         adapter.notifyDataSetChanged();
     }
+
     private MindTreeFragment getCurrentFragment() {
         return ((MindTreeFragment) adapter.getItem(viewPager.getCurrentItem()));
     }
+
     private void removeCurrentFragment() {
         int index = viewPager.getCurrentItem();
         fragments.remove(index);
@@ -109,7 +117,12 @@ public class MindTreeActivity extends AppCompatActivity {
                 return true;
             case R.id.editNode:
                 Intent intent = new Intent(this, ContentActivity.class);
-                intent.putExtra(ContentActivity.CONTENT_PATH_KEY, Util.getMD5Checksum(currentButton.getNode().getPath().getAbsolutePath()));
+                intent.putExtra(ContentActivity.MAP_FILENAME_KEY, fileName);
+                intent.putExtra(
+                        ContentActivity.CONTENT_PATH_KEY,
+                        TheApplication.getPath(
+                                fileName,
+                                Util.getMD5Checksum(currentButton.getNode().getPath().getAbsolutePath())));
                 startActivity(intent);
                 return true;
             case R.id.deleteNode:

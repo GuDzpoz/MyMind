@@ -2,33 +2,42 @@ package moe.gensokyoradio.liberty.mymind;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.webkit.WebView;
+import android.widget.Toast;
 
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
 import hu.scythe.droidwriter.DroidWriterEditText;
 import moe.gensokyoradio.liberty.mymind.content.ContentLayout;
+import moe.gensokyoradio.liberty.mymind.content.LocalImageView;
 
 public class ContentActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "ContentActivity";
-    // TODO: Change the methods to practical ones
     public static final String CONTENT_PATH_KEY = "path";
-    private static final int SELECT_PICTURE = 1;
+    public static final String MAP_FILENAME_KEY = "fileName";
     private DroidWriterEditText editText;
     private ContentLayout contentLayout;
     private String path;
+    private String mapFileName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,12 +45,13 @@ public class ContentActivity extends AppCompatActivity implements View.OnClickLi
         setContentView(R.layout.activity_content);
 
         path = getIntent().getStringExtra(CONTENT_PATH_KEY);
+        mapFileName = getIntent().getStringExtra(MAP_FILENAME_KEY);
         contentLayout = (ContentLayout) findViewById(R.id.contentLayout);
         contentLayout.setOnContentClickedListener(this);
         contentLayout.setOnContextCreatedListener(this);
 
         try {
-            String content = Util.readAll(this, path);
+            String content = Util.readAll(path);
             contentLayout.load(content);
         } catch (IOException e) {
             e.printStackTrace();
@@ -119,7 +129,7 @@ public class ContentActivity extends AppCompatActivity implements View.OnClickLi
 
         if (id == R.id.saveOption) {
             try {
-                Util.writeAll(this, path, contentLayout.save());
+                Util.writeAll(path, contentLayout.save());
             } catch (IOException e) {
                 e.printStackTrace();
                 this.finish();
@@ -130,38 +140,46 @@ public class ContentActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void getImage() {
-        Intent intent = new Intent();
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, "Select Picture"), SELECT_PICTURE);
+        CropImage.activity()
+                .setGuidelines(CropImageView.Guidelines.ON)
+                .start(this);
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == SELECT_PICTURE) {
-                Uri selectedImageUri = data.getData();
-                Log.i(TAG, "Uri: " + (selectedImageUri != null ? selectedImageUri.toString() : "null"));
-                if(selectedImageUri.getScheme().equals("content")) {
-                    String path = backup(getRealPathFromURI(selectedImageUri));
-                    Log.i(TAG, "Image Path: " + path);
-                    contentLayout.addImage(path);
-                }
-                else {
-                    String path = null;
-                    try {
-                        path = backup(URLDecoder.decode(selectedImageUri.getPath(), "UTF-8"));
-                    } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();
-                    }
-                    Log.i(TAG, "Image Path: " + path);
+            if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+                CropImage.ActivityResult result = CropImage.getActivityResult(data);
+                Uri resultUri = result.getUri();
+                String path = getPhysicalPath(resultUri);
+                try {
+                    path = backup(path);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Toast.makeText(this, "Image load failed. Try editing the settings.", Toast.LENGTH_LONG).show();
                 }
                 contentLayout.addImage(path);
             }
         }
     }
 
-    public String getRealPathFromURI(Uri contentUri) {
+    @Nullable
+    private String getPhysicalPath(Uri uri) {
+        if (uri.getScheme().equals("content")) {
+            return getRealPathFromContentURI(uri);
+        } else {
+            String path = null;
+            try {
+                path = URLDecoder.decode(uri.getPath(), "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+                Toast.makeText(this, "UTF-8 is not supported on your device.", Toast.LENGTH_LONG).show();
+            }
+            return path;
+        }
+    }
+
+    public String getRealPathFromContentURI(Uri contentUri) {
         Cursor cursor = null;
         try {
             String[] projection = {MediaStore.Images.Media.DATA};
@@ -213,8 +231,12 @@ public class ContentActivity extends AppCompatActivity implements View.OnClickLi
         return true;
     }
 
-    private String backup(String path) {
-        return path;
+    private String backup(String path) throws IOException {
+        File src = new File(path);
+        String newPath = TheApplication.getPath(mapFileName, src.getName());
+        File dst = new File(newPath);
+        Util.directorySaveCopy(src, dst);
+        return newPath;
     }
 
     @Override
@@ -229,6 +251,21 @@ public class ContentActivity extends AppCompatActivity implements View.OnClickLi
             findViewById(R.id.action_bold).setEnabled(false);
             findViewById(R.id.action_italic).setEnabled(false);
             findViewById(R.id.action_underline).setEnabled(false);
+
+            if(view instanceof LocalImageView) {
+                WebView webView = new WebView(this);
+                webView.getSettings().setLoadWithOverviewMode(true);
+                webView.getSettings().setUseWideViewPort(true);
+                webView.getSettings().setSupportZoom(true);
+                webView.getSettings().setBuiltInZoomControls(true);
+                webView.getSettings().setDisplayZoomControls(true);
+                webView.setBackgroundColor(0x00000000);
+                webView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                webView.loadUrl("file://" + ((LocalImageView)view).getPath());
+                new AlertDialog.Builder(this)
+                        .setView(webView)
+                        .show();
+            }
         }
     }
 }

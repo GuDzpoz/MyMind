@@ -1,11 +1,9 @@
 package moe.gensokyoradio.liberty.mymind;
 
 import android.app.Application;
+import android.os.Environment;
 
-import java.io.IOException;
-import java.util.Hashtable;
-
-import moe.gensokyoradio.liberty.mymind.tree.MyMindTree;
+import java.io.File;
 
 /*
  *     This file is part of MyMind.
@@ -25,72 +23,9 @@ import moe.gensokyoradio.liberty.mymind.tree.MyMindTree;
  */
 
 public class TheApplication extends Application {
-/*    private Hashtable<String, MyMindTree> trees = new Hashtable<>();
-    private Hashtable<String, Integer> userNumbers = new Hashtable<>();
-    public MyMindTree getMindTree(String path) {
-        plus(path);
-        if(trees.containsKey(path)) {
-            return trees.get(path);
-        }
-        else {
-            try {
-                MyMindTree tree = MyMindTree.fromJSON(Util.readAll(this, path));
-                trees.put(path, tree);
-                return tree;
-            } catch (IOException e) {
-                e.printStackTrace();
-                return null;
-            }
-        }
+    public static final String DEFAULT_STORAGE_PATH = Environment.getExternalStorageDirectory().getPath() + "/MyMinds/";
+    public static String getPath(String mindMap, String fileName) {
+        new File(DEFAULT_STORAGE_PATH + mindMap + "/").mkdirs();
+        return DEFAULT_STORAGE_PATH + mindMap + "/" + fileName;
     }
-
-    public void releaseMindTree(String path) {
-        minus(path);
-        if(!isBeingUsed(path)) {
-            save(path);
-            if(trees.containsKey(path)) {
-                trees.remove(path);
-            }
-        }
-    }
-
-    public void save(String path) {
-        try {
-            Util.writeAll(this, path, this.getMindTree(path).toJSON());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private boolean isBeingUsed(String path) {
-        if(userNumbers.containsKey(path)) {
-            if( userNumbers.get(path) == 0) {
-                return false;
-            }
-            else {
-                return true;
-            }
-        }
-        else {
-            return false;
-        }
-    }
-
-    private void plus(String path) {
-        if(userNumbers.containsKey(path)) {
-            userNumbers.put(path, userNumbers.get(path) + 1);
-        }
-        else {
-            userNumbers.put(path, 1);
-        }
-    }
-
-    private void minus(String path) {
-        if(userNumbers.containsKey(path)) {
-            userNumbers.put(path, userNumbers.get(path) - 1);
-        }
-        else {
-            userNumbers.put(path, 0);
-        }
-    }*/
 }

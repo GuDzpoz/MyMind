@@ -1,23 +1,11 @@
 package moe.gensokyoradio.liberty.mymind;
 
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Editable;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.SpannableStringBuilder;
-import android.text.TextWatcher;
-import android.text.style.StyleSpan;
-import android.util.Log;
-import android.view.KeyEvent;
-import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-
-import hu.scythe.droidwriter.DroidWriterEditText;
 
 public class AboutActivity extends AppCompatActivity {
 
@@ -27,19 +15,16 @@ public class AboutActivity extends AppCompatActivity {
         setContentView(R.layout.activity_about);
 
         setTitle(getString(R.string.about_title));
+        Toast.makeText(this, R.string.load_license_toast, Toast.LENGTH_SHORT).show();
+        ((TextView)findViewById(R.id.aboutTextview)).setText(getLicense());
     }
 
     private String getLicense() {
-        InputStreamReader reader = new InputStreamReader(getResources().openRawResource(R.raw.license));
-        StringBuilder sb = new StringBuilder(512);
         try {
-            int c = 0;
-            while ((c = reader.read()) != -1) {
-                sb.append((char) c);
-            }
+            return Util.read(getResources().openRawResource(R.raw.license));
         } catch (IOException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
-        return sb.toString();
     }
 }

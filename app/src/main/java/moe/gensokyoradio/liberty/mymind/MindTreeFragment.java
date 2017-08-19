@@ -41,11 +41,12 @@ public class MindTreeFragment extends android.support.v4.app.Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+        // TODO: 'View rootView = inflater.inflate(R.layout.fragment_mind_tree, container);' stack overflows
         View rootView = inflater.inflate(R.layout.fragment_mind_tree, null);
         treeLayout = rootView.findViewById(R.id.treeLayout);
         if (context != null) {
             try {
-                tree = MyMindTree.fromJSON(Util.readAll(context, path));
+                tree = MyMindTree.fromJSON(Util.readAll(path));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -54,7 +55,7 @@ public class MindTreeFragment extends android.support.v4.app.Fragment {
                     new PartitionLayout.OnNodeClickListener() {
                         @Override
                         public void onClick(View v, PartitionLayout layout, Button button, MyNode node) {
-                            Log.i("OnClick", node.getPath().getAbsolutePath());
+                            v.showContextMenu();
                         }
                     }, getActivity());
         }
@@ -80,7 +81,7 @@ public class MindTreeFragment extends android.support.v4.app.Fragment {
 
     public void save() {
         try {
-            Util.writeAll(context, path, tree.toJSON());
+            Util.writeAll(path, tree.toJSON());
         } catch (IOException e) {
             e.printStackTrace();
         }

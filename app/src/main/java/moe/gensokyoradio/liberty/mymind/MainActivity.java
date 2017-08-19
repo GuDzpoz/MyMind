@@ -83,11 +83,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                                         dialog.cancel();
                                     }
                                     else {
-                                        String path = "MyMind_" + title + ".json";
-                                        preferences.edit().putString(title, path).apply();
+                                        String fileName = "MyMind_" + title + ".json";
+                                        preferences.edit().putString(title, fileName).apply();
                                         titles.add(title);
                                         adapter.notifyDataSetChanged();
-                                        initializeMap(title, path);
+                                        initializeMap(title, fileName);
                                     }
                                 }
                             }
@@ -97,12 +97,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         });
     }
 
-    private void initializeMap(String title, String path) {
+    public static void initializeMap(String title, String fileName) {
         try {
-            Util.writeAll(this, path, "{\"title\":\"" + title + "\"," + "\"attributes\":{},\"children\":[]}");
+            Util.writeAll(MindTreeActivity.getMapPath(fileName), "{\"title\":\"" + title + "\"," + "\"attributes\":{},\"children\":[]}");
         } catch (IOException e) {
             e.printStackTrace();
-            this.finish();
+            System.exit(1);
+            // TODO: Consider throwing it or do something so that one can know it
         }
     }
 
@@ -146,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         SharedPreferences preferences = getSharedPreferences(MAP_PATHS_KEY, MODE_PRIVATE);
         Intent intent = new Intent(this, MindTreeActivity.class);
-        intent.putExtra(MindTreeActivity.MAP_PATH_KEY, preferences.getString(this.titles.get(position), null));
+        intent.putExtra(MindTreeActivity.MAP_FILENAME_ID, preferences.getString(this.titles.get(position), null));
         startActivity(intent);
     }
 }

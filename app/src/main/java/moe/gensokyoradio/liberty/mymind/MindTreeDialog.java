@@ -114,7 +114,7 @@ public class MindTreeDialog extends Dialog implements AdapterView.OnItemClickLis
                                         preferences.edit().putString(title, path).apply();
                                         titles.add(title);
                                         adapter.notifyDataSetChanged();
-                                        initializeMap(title, path);
+                                        MainActivity.initializeMap(title, path);
                                     }
                                 }
                             }
@@ -122,15 +122,6 @@ public class MindTreeDialog extends Dialog implements AdapterView.OnItemClickLis
                         .show();
             }
         });
-    }
-
-    private void initializeMap(String title, String path) {
-        try {
-            Util.writeAll(getContext(), path, "{\"title\":\"" + title + "\"," + "\"attributes\":{},\"children\":[]}");
-        } catch (IOException e) {
-            e.printStackTrace();
-            this.cancel();
-        }
     }
 
     @Override

@@ -151,8 +151,8 @@ public class ContentLayout extends LinearLayout implements View.OnClickListener,
                     Matcher matcher = IMAGE_PATTERN.matcher(line);
                     if(matcher.find()) {
                         String text = matcher.group(1);
-                        String link = matcher.group(2);
-                        addImage(link);
+                        String path = matcher.group(2);
+                        addImage(path);
                     }
                 }
                 else {
