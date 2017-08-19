@@ -3,8 +3,10 @@ package moe.gensokyoradio.liberty.mymind.content;
 import android.content.Context;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.LinearLayout;
 
 import java.io.BufferedReader;
@@ -33,6 +35,7 @@ import hu.scythe.droidwriter.DroidWriterEditText;
  */
 
 public class ContentLayout extends LinearLayout implements View.OnClickListener, View.OnCreateContextMenuListener {
+    private static final String TAG = "ContentLayout";
     private OnClickListener clickListener;
     private OnCreateContextMenuListener contextMenuListener;
 
@@ -53,29 +56,35 @@ public class ContentLayout extends LinearLayout implements View.OnClickListener,
         imageView.setPath(path);
         addView(imageView);
     }
+
     public void addHeading() {
         HeadingEditText headingEditText = new HeadingEditText(getContext());
         addView(headingEditText);
     }
+
     private void addHeading(String heading) {
         HeadingEditText headingEditText = new HeadingEditText(getContext());
         headingEditText.setText(heading);
         addView(headingEditText);
     }
+
     public void addText() {
         DroidWriterEditText editText = new DroidWriterEditText(getContext());
         addView(editText);
     }
+
     private void addText(String text) {
         DroidWriterEditText editText = new DroidWriterEditText(getContext());
         editText.setTextHTML(text);
         addView(editText);
     }
+
     public void addLink() {
         LinkEditText editText = new LinkEditText(getContext());
         addView(editText);
         editText.performClick();
     }
+
     private void addLink(String text, String link) {
         LinkEditText editText = new LinkEditText(getContext());
         editText.setText(text);
@@ -97,18 +106,17 @@ public class ContentLayout extends LinearLayout implements View.OnClickListener,
         child.setOnCreateContextMenuListener(this);
 
         int index = getIndex(this.getFocusedChild());
-        if(index == -1) {
+        if (index == -1) {
             super.addView(child);
-        }
-        else {
+        } else {
             super.addView(child);
         }
     }
 
     public int getIndex(View view) {
-        for(int i = 0; i != this.getChildCount(); ++i) {
+        for (int i = 0; i != this.getChildCount(); ++i) {
             View child = this.getChildAt(i);
-            if(child == view) {
+            if (child == view) {
                 return i;
             }
         }
@@ -118,6 +126,7 @@ public class ContentLayout extends LinearLayout implements View.OnClickListener,
     public void setOnContentClickedListener(OnClickListener listener) {
         this.clickListener = listener;
     }
+
     public void setOnContextCreatedListener(OnCreateContextMenuListener listener) {
         this.contextMenuListener = listener;
     }
@@ -131,35 +140,34 @@ public class ContentLayout extends LinearLayout implements View.OnClickListener,
 
     private static final Pattern LINK_PATTERN = Pattern.compile("^\\[([^\\]]*?)\\]\\(([^)]*?)\\)");
     private static final Pattern IMAGE_PATTERN = Pattern.compile("^!\\[([^\\]]*?)\\]\\(([^)]*?)\\)");
+
     public void load(String content) {
         BufferedReader reader = new BufferedReader(new StringReader(content));
         try {
             String line;
             while ((line = reader.readLine()) != null) {
-                if(line.startsWith("#")) {
+                if (line.startsWith("#")) {
                     addHeading(line.substring(1));
-                }
-                else if(line.startsWith("[")) {
+                } else if (line.startsWith("[")) {
                     Matcher matcher = LINK_PATTERN.matcher(line);
-                    if(matcher.find()) {
+                    if (matcher.find()) {
                         String text = matcher.group(1);
                         String link = matcher.group(2);
                         addLink(text, link);
                     }
-                }
-                else if(line.startsWith("!")) {
+                } else if (line.startsWith("!")) {
                     Matcher matcher = IMAGE_PATTERN.matcher(line);
-                    if(matcher.find()) {
+                    if (matcher.find()) {
                         String text = matcher.group(1);
                         String path = matcher.group(2);
                         addImage(path);
                     }
-                }
-                else {
-                    if(line.startsWith("\\")) {
+                } else {
+                    if (line.startsWith("\\")) {
                         line = line.substring(1);
                     }
-                    line = line.replace("\\n", "\n");
+                    Log.i(TAG, "Loading TextView: " + line);
+                    line = line.replace("\n", "").replace("\\n", "\n");
                     addText(line);
                 }
             }
@@ -170,55 +178,56 @@ public class ContentLayout extends LinearLayout implements View.OnClickListener,
 
     public String save() {
         StringBuilder builder = new StringBuilder(512);
-        for(int i = 0; i != this.getChildCount(); ++i) {
+        for (int i = 0; i != this.getChildCount(); ++i) {
             View view = this.getChildAt(i);
-            if(view instanceof HeadingEditText) {
+            if (view instanceof HeadingEditText) {
                 builder
                         .append('#')
-                        .append(((HeadingEditText)view).getText().toString())
+                        .append(((HeadingEditText) view).getText().toString())
                         .append('\n');
-            }
-            else if(view instanceof LinkEditText) {
+            } else if (view instanceof LinkEditText) {
                 builder
                         .append('[')
-                        .append(((LinkEditText)view).getText().toString())
+                        .append(((LinkEditText) view).getText().toString())
                         .append("](")
-                        .append(((LinkEditText)view).getLink())
+                        .append(((LinkEditText) view).getLink())
                         .append(")\n");
-            }
-            else if(view instanceof LocalImageView) {
+            } else if (view instanceof LocalImageView) {
                 builder
                         .append("![")
                         .append("image")
                         .append("](")
-                        .append(((LocalImageView)view).getPath())
+                        .append(((LocalImageView) view).getPath())
                         .append(")\n");
-            }
-            else if(view instanceof DroidWriterEditText){
-                String content = ((DroidWriterEditText)view).getTextHTML().replace("\n", "\\n");
-                if(!content.isEmpty()) {
+            } else if (view instanceof DroidWriterEditText) {
+                String content = ((DroidWriterEditText) view).getTextHTML();
+                if (content.endsWith("\n")) {
+                    content = content.substring(0, content.length() - 1).replace("\n", "\\n");
+                } else {
+                    content = content.replace("\n", "\\n");
+                }
+                if (!content.isEmpty()) {
                     switch (content.charAt(0)) {
+                        // content.startsWith
                         case '#':
                         case '[':
                         case '!':
                         case '\\':
                             builder.append('\\');
-                            default:
-                                builder
-                                        .append(content)
-                                        .append('\n');
+                        default:
+                            builder
+                                    .append(content)
+                                    .append('\n');
                     }
-                }
-                else {
+                } else {
                     builder.append('\n');
                 }
             }
         }
         String result = builder.toString();
-        if(result.length() > 0 && result.charAt(result.length() - 1) == '\n') {
+        if (result.length() > 0 && result.charAt(result.length() - 1) == '\n') {
             return result.substring(0, result.length() - 1);
-        }
-        else {
+        } else {
             return result;
         }
     }

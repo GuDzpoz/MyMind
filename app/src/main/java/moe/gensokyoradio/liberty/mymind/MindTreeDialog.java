@@ -3,17 +3,12 @@ package moe.gensokyoradio.liberty.mymind;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StyleRes;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.Toolbar;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -22,15 +17,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Set;
-
-import moe.gensokyoradio.liberty.mymind.AboutActivity;
-import moe.gensokyoradio.liberty.mymind.MindTreeActivity;
-import moe.gensokyoradio.liberty.mymind.R;
-import moe.gensokyoradio.liberty.mymind.SettingsActivity;
-import moe.gensokyoradio.liberty.mymind.Util;
 
 /*
  *     This file is part of MyMind.
@@ -101,15 +89,13 @@ public class MindTreeDialog extends Dialog implements AdapterView.OnItemClickLis
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 String title = editText.getText().toString();
-                                if(title.isEmpty()) {
+                                if (title.isEmpty()) {
                                     dialog.cancel();
-                                }
-                                else {
+                                } else {
                                     SharedPreferences preferences = getSharedPreferences();
-                                    if(preferences.contains(title)) {
+                                    if (preferences.contains(title)) {
                                         dialog.cancel();
-                                    }
-                                    else {
+                                    } else {
                                         String path = "MyMind_" + title + ".json";
                                         preferences.edit().putString(title, path).apply();
                                         titles.add(title);
@@ -141,7 +127,7 @@ public class MindTreeDialog extends Dialog implements AdapterView.OnItemClickLis
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         SharedPreferences preferences = getSharedPreferences();
-        if(listener != null) {
+        if (listener != null) {
             listener.onChosen(preferences.getString(this.titles.get(position), null));
         }
         this.dismiss();
